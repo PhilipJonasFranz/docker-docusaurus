@@ -1,5 +1,5 @@
 FROM node:20-alpine3.17
-LABEL maintainer="Deokgyu Yang <secugyu@gmail.com>" \
+LABEL maintainer="Philip Jonas Franz <pj.franz@gmx.net>" \
       description="Lightweight Docusaurus container with Node.js based on Alpine Linux"
 
 RUN apk add --no-cache \
@@ -10,7 +10,6 @@ RUN apk add --no-cache \
 ENV TARGET_UID=1000
 ENV TARGET_GID=1000
 ENV AUTO_UPDATE='true'
-ENV WEBSITE_NAME='MyWebsite'
 ENV TEMPLATE='classic'
 ENV RUN_MODE='development'
 
@@ -20,13 +19,11 @@ WORKDIR /docusaurus
 
 # Copy configuration files
 ADD config/init.sh /
-ADD config/auto_update_crontab.txt /
-ADD config/auto_update_job.sh /
 ADD config/run.sh /
 COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Set files permission
-RUN chmod a+x /init.sh /auto_update_job.sh /run.sh
+RUN chmod a+x /init.sh /run.sh
 
 EXPOSE 80
 VOLUME [ "/docusaurus" ]
