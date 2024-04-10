@@ -1,0 +1,47 @@
+resources:
+- name: source-code
+  type: git
+  icon: github
+  source:
+    uri: https://github.com/PhilipJonasFranz/docker-docusaurus.git
+    branch: main
+    username: ((github_token))
+    password: x-oauth-basic
+
+    # Remove this line to build on every commit, instead on new pushed tags
+    tag_filter: "*"
+
+- name: jfrog-docker
+  type: registry-image
+  icon: docker
+  source:
+    repository: concourse.mydomain.com/docker/docker-docusaurus
+    username: ((jfrog_user))
+    password: ((jfrog_password))
+    tag: latest
+
+jobs:
+- name: build-and-push
+  plan:
+  - get: source-code
+    trigger: true
+  - task: build-task-image
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: concourse/oci-build-task
+      inputs:
+      - name: source-code
+      outputs:
+      - name: image
+      params:
+        CONTEXT: source-code/frontend
+      run:
+        path: build
+  - put: jfrog-docker
+    params:
+      image: image/image.tar
+      additional_tags: source-code/.git/ref
